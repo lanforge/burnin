@@ -56,7 +56,7 @@ class BurnInApp(ctk.CTk):
 
         self.duration_frame = ctk.CTkFrame(self.control_frame)
         self.duration_frame.pack(pady=10, fill="x", padx=20)
-        ctk.CTkLabel(self.duration_frame, text="Auto Burn-In Duration (Mins):").pack(side="left", padx=5)
+        ctk.CTkLabel(self.duration_frame, text="Auto Burn-In Duration (Secs):").pack(side="left", padx=5)
         self.duration_entry = ctk.CTkEntry(self.duration_frame, width=50)
         self.duration_entry.insert(0, "30")
         self.duration_entry.pack(side="left", padx=5)
@@ -91,16 +91,11 @@ class BurnInApp(ctk.CTk):
         self.lbl_max_temps = ctk.CTkLabel(self.monitor_frame, text="Max Temps - CPU: 0°C | GPU: 0°C", font=("Arial", 14), text_color="orange")
         self.lbl_max_temps.pack(pady=20)
 
-        # API Section
+        # Certificate Section
         self.api_frame = ctk.CTkFrame(self.monitor_frame)
         self.api_frame.pack(pady=20, fill="x", padx=10)
-        
-        ctk.CTkLabel(self.api_frame, text="API Database URL:").pack(pady=5)
-        self.api_entry = ctk.CTkEntry(self.api_frame, width=300)
-        self.api_entry.insert(0, "http://example-api.com/api/certificate")
-        self.api_entry.pack(pady=5)
 
-        self.btn_cert = ctk.CTkButton(self.api_frame, text="Generate & Send Certificate", command=self.send_cert)
+        self.btn_cert = ctk.CTkButton(self.api_frame, text="Generate Certificate File", command=self.send_cert)
         self.btn_cert.pack(pady=10)
         
         self.lbl_status = ctk.CTkLabel(self.api_frame, text="", text_color="green")
@@ -176,9 +171,9 @@ class BurnInApp(ctk.CTk):
 
     def start_automated_test(self):
         try:
-            mins = float(self.duration_entry.get())
+            secs = int(self.duration_entry.get())
         except ValueError:
-            mins = 30.0
+            secs = 30
             self.duration_entry.delete(0, "end")
             self.duration_entry.insert(0, "30")
             
@@ -188,7 +183,7 @@ class BurnInApp(ctk.CTk):
         if not self.gpu_burner.is_running: self.toggle_gpu()
         if not self.crypto_payload.is_running: self.toggle_crypto()
         
-        self.auto_end_time = time.time() + (mins * 60)
+        self.auto_end_time = time.time() + secs
         self.auto_running = True
         self.update_timer()
 
@@ -215,12 +210,11 @@ class BurnInApp(ctk.CTk):
             self.after(1000, self.update_timer)
 
     def send_cert(self):
-        duration_mins = round((time.time() - self.start_time) / 60.0, 2)
-        url = self.api_entry.get()
+        duration_secs = int(time.time() - self.start_time)
         completed = [k for k, v in self.phases_completed.items() if v]
         
-        success = send_certificate(url, self.max_temps, duration_mins, completed)
+        success = send_certificate(None, self.max_temps, duration_secs, completed)
         if success:
-            self.lbl_status.configure(text="Certificate sent successfully!", text_color="green")
+            self.lbl_status.configure(text="Certificate saved to burn_in_certificate.txt!", text_color="green")
         else:
-            self.lbl_status.configure(text="Failed to send certificate.", text_color="red")
+            self.lbl_status.configure(text="Failed to generate certificate.", text_color="red")

@@ -23,32 +23,32 @@ def get_specs():
         
     return specs
 
+import json
+import os
+
 def send_certificate(api_url, max_temps, duration_mins, phases_completed):
     """
-    Send the burn-in certificate data to the database API.
+    Generate the burn-in certificate as a text file instead of deploying an API.
     """
     specs = get_specs()
     payload = {
         "status": "SUCCESS",
         "system_specs": specs,
         "max_temperatures": max_temps,
-        "test_duration_minutes": duration_mins,
+        "test_duration_seconds": duration_mins, # Repurposed to seconds for quick testing
         "phases_completed": phases_completed
     }
     
     try:
-        # We will attempt to send to the provided API URL.
-        # If no URL is configured, we will just print to console for demonstration.
-        if not api_url or api_url == "http://example-api.com/api/certificate":
-            print("--- MOCK API REQUEST ---")
-            print(f"URL: {api_url}")
-            print(f"Payload: {payload}")
-            print("------------------------")
-            return True
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        cert_path = os.path.join(base_dir, "burn_in_certificate.txt")
+        
+        with open(cert_path, "w") as f:
+            f.write("=== LANFORGE BURN-IN CERTIFICATE ===\n\n")
+            f.write(json.dumps(payload, indent=4))
             
-        headers = {"Content-Type": "application/json"}
-        response = requests.post(api_url, json=payload, headers=headers, timeout=10)
-        return response.status_code in (200, 201)
+        print(f"Certificate generated at {cert_path}")
+        return True
     except Exception as e:
-        print(f"API Send Error: {e}")
+        print(f"File generation error: {e}")
         return False

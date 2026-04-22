@@ -9,7 +9,7 @@ It heavily stresses the CPU, RAM, and GPU to ensure system stability before ship
 - **Phase 2: CPU/RAM Burner** - Maxes out all logical CPU cores and allocates large blocks of RAM.
 - **Phase 3: GPU Burner** - Utilizes PyOpenCL (or numpy fallback) to perform heavy parallel matrix computations on the GPU.
 - **Phase 4: Crypto Payload** - Simulates SHA-256 crypto mining to intensively test the CPU under prolonged, consistent hashing workloads.
-- **Certificate Generation** - Automatically gathers system specs (Hostname, OS, CPU, RAM, GPU), maximum recorded temperatures, and duration, and sends a JSON payload to your custom Database API.
+- **Certificate Generation** - Automatically gathers system specs (Hostname, OS, CPU, RAM, GPU), maximum recorded temperatures, and duration, and saves a JSON payload to `burn_in_certificate.txt`.
 
 ## Requirements
 
