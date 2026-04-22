@@ -174,17 +174,45 @@ class BurnInApp(ctk.CTk):
             self.phases_completed["Crypto_Payload"] = True
             self.btn_crypto.configure(text="Phase 4: Crypto Payload (STOP)", fg_color="red")
 
-    def toggle_all(self):
-        if self.cpu_burner.is_running or self.gpu_burner.is_running or self.crypto_payload.is_running:
-            if self.cpu_burner.is_running: self.toggle_cpu()
-            if self.gpu_burner.is_running: self.toggle_gpu()
-            if self.crypto_payload.is_running: self.toggle_crypto()
-            self.btn_all.configure(text="RUN FULL STRESS TEST")
+    def start_automated_test(self):
+        try:
+            mins = float(self.duration_entry.get())
+        except ValueError:
+            mins = 30.0
+            self.duration_entry.delete(0, "end")
+            self.duration_entry.insert(0, "30")
+            
+        self.btn_all.configure(text="STOP AUTOMATED BURN-IN", command=self.stop_automated_test)
+        
+        if not self.cpu_burner.is_running: self.toggle_cpu()
+        if not self.gpu_burner.is_running: self.toggle_gpu()
+        if not self.crypto_payload.is_running: self.toggle_crypto()
+        
+        self.auto_end_time = time.time() + (mins * 60)
+        self.auto_running = True
+        self.update_timer()
+
+    def stop_automated_test(self):
+        self.auto_running = False
+        self.lbl_timer.configure(text="")
+        self.btn_all.configure(text="RUN AUTOMATED BURN-IN", command=self.start_automated_test)
+        
+        if self.cpu_burner.is_running: self.toggle_cpu()
+        if self.gpu_burner.is_running: self.toggle_gpu()
+        if self.crypto_payload.is_running: self.toggle_crypto()
+
+    def update_timer(self):
+        if not getattr(self, 'auto_running', False):
+            return
+            
+        remaining = int(self.auto_end_time - time.time())
+        if remaining <= 0:
+            self.stop_automated_test()
+            self.send_cert()
         else:
-            self.toggle_cpu()
-            self.toggle_gpu()
-            self.toggle_crypto()
-            self.btn_all.configure(text="STOP FULL STRESS TEST")
+            mins, secs = divmod(remaining, 60)
+            self.lbl_timer.configure(text=f"Time Remaining: {mins:02d}:{secs:02d}")
+            self.after(1000, self.update_timer)
 
     def send_cert(self):
         duration_mins = round((time.time() - self.start_time) / 60.0, 2)
