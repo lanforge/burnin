@@ -9,9 +9,6 @@ from src.hardware_setup import setup_hardware_monitor
 from src.gui import BurnInApp
 
 def main():
-    if sys.platform.startswith('win'):
-        multiprocessing.freeze_support()
-        
     # Auto-start LibreHardwareMonitor to guarantee accurate temperatures
     setup_hardware_monitor()
         
@@ -19,4 +16,6 @@ def main():
     app.mainloop()
 
 if __name__ == "__main__":
+    # THIS MUST BE THE ABSOLUTE FIRST LINE TO PREVENT FORK BOMBS!
+    multiprocessing.freeze_support()
     main()

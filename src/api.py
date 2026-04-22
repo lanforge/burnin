@@ -1,4 +1,6 @@
-import requests
+import json
+import os
+import sys
 import platform
 import psutil
 import socket
@@ -23,32 +25,27 @@ def get_specs():
         
     return specs
 
-import json
-import os
-
 def send_certificate(api_url, max_temps, duration_mins, phases_completed):
-    """
-    Generate the burn-in certificate as a text file instead of deploying an API.
-    """
     specs = get_specs()
     payload = {
         "status": "SUCCESS",
         "system_specs": specs,
         "max_temperatures": max_temps,
-        "test_duration_seconds": duration_mins, # Repurposed to seconds for quick testing
+        "test_duration_seconds": duration_mins,
         "phases_completed": phases_completed
     }
     
     try:
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        cert_path = os.path.join(base_dir, "burn_in_certificate.txt")
+        # Find the Desktop
+        desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+        cert_path = os.path.join(desktop_path, "LANForge_Certificate.txt")
         
         with open(cert_path, "w") as f:
             f.write("=== LANFORGE BURN-IN CERTIFICATE ===\n\n")
             f.write(json.dumps(payload, indent=4))
             
-        print(f"Certificate generated at {cert_path}")
-        return True
+        # Return True AND the exact path so the GUI can display it!
+        return True, cert_path
     except Exception as e:
-        print(f"File generation error: {e}")
-        return False
+        # Return False AND the exact error so we aren't flying blind!
+        return False, str(e)
