@@ -1,17 +1,19 @@
 import multiprocessing
 import time
-import math
 import gc
+import numpy as np
 
 def burn_cpu(stop_event):
-    """Infinite loop of heavy math to stress the CPU."""
+    """Heavy math using NumPy to trigger AVX/SIMD instructions for max wattage."""
     while not stop_event.is_set():
-        # Heavy math operations to max out the core
-        x = 0.0001
-        for i in range(100000):
-            x += math.sqrt(x) + math.sin(x) * math.cos(x)
-            if x > 1000000:
-                x = 0.0001
+        # Large matrix multiplication heavily utilizes AVX instructions 
+        # generating significantly more physical heat/wattage than pure Python math.
+        a = np.random.rand(500, 500)
+        b = np.random.rand(500, 500)
+        for _ in range(10):
+            if stop_event.is_set():
+                break
+            _ = np.dot(a, b)
 
 def burn_ram(stop_event, target_mb):
     """Allocate memory to stress RAM and keep it active."""

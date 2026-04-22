@@ -14,12 +14,31 @@ except Exception:
 def get_cpu_temp():
     temp = None
     try:
-        if platform.system() == 'Windows' and w is not None:
-            # MSAcpi_ThermalZoneTemperature gives temp in tenths of degrees Kelvin
-            temperature_info = w.MSAcpi_ThermalZoneTemperature()
-            if len(temperature_info) > 0:
-                temp_k = temperature_info[0].CurrentTemperature
-                temp = (temp_k / 10.0) - 273.15
+        if platform.system() == 'Windows':
+            import wmi
+            
+            # First try LibreHardwareMonitor / OpenHardwareMonitor for accurate desktop temps
+            for namespace in ["root\\LibreHardwareMonitor", "root\\OpenHardwareMonitor"]:
+                try:
+                    w_hm = wmi.WMI(namespace=namespace)
+                    sensors = w_hm.Sensor()
+                    for sensor in sensors:
+                        if sensor.SensorType == 'Temperature' and 'CPU' in sensor.Name:
+                            return round(float(sensor.Value), 1)
+                except Exception:
+                    pass
+
+            # Fallback to MSAcpi_ThermalZoneTemperature (often unreliable on modern desktops)
+            if w is not None:
+                try:
+                    temperature_info = w.MSAcpi_ThermalZoneTemperature()
+                    if len(temperature_info) > 0:
+                        temp_k = temperature_info[0].CurrentTemperature
+                        temp = (temp_k / 10.0) - 273.15
+                        return round(temp, 1)
+                except Exception:
+                    pass
+                    
         elif platform.system() == 'Linux':
             temps = psutil.sensors_temperatures()
             if 'coretemp' in temps:
