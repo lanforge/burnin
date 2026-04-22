@@ -21,9 +21,14 @@ pip install -r requirements.txt
 
 *(Note: PyOpenCL may require standard OpenCL drivers installed on the system, which are usually included with NVIDIA/AMD/Intel graphics drivers.)*
 
-## How to Run
+## How to Run (Deployment on Windows)
 
-Simply execute the main file:
+We recommend using the included deployment script to automatically initialize hardware sensors and start the application:
+
+1. Right-click `deploy.ps1` and select "Run with PowerShell"
+   *(This automatically downloads and starts LibreHardwareMonitor in the background to guarantee accurate CPU package temperature readings before launching the Burn-In script).*
+
+Alternatively, run manually:
 
 ```bash
 python src/main.py
