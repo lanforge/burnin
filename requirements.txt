@@ -1,0 +1,8 @@
+customtkinter==5.2.2
+psutil==5.9.8
+GPUtil==1.4.0
+requests==2.31.0
+wmi==1.5.1; sys_platform == 'win32'
+pywin32==306; sys_platform == 'win32'
+pyopencl==2023.1.4
+numpy==1.26.4
